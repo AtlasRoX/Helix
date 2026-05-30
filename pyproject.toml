@@ -25,9 +25,11 @@ dependencies = [
 ]
 
 [project.scripts]
+gc-server = "cli.entrypoints:serve"
 fcc-server = "cli.entrypoints:serve"
 free-claude-code = "cli.entrypoints:serve"
 fcc-init = "cli.entrypoints:init"
+gc-claud = "cli.entrypoints:launch_claude"
 fcc-claude = "cli.entrypoints:launch_claude"
 
 [project.optional-dependencies]

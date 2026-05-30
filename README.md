@@ -69,7 +69,7 @@ Review the installers at [scripts/install.sh](https://github.com/AtlasRoX/Helix/
 ### 2. Start The Proxy
 
 ```bash
-fcc-server
+gc-server
 ```
 
 After startup, Uvicorn prints the proxy bind address and the app logs the admin URL:
@@ -100,7 +100,7 @@ The default model is already set to `nvidia_nim/nvidia/nemotron-3-super-120b-a12
 fcc-claude
 ```
 
-`fcc-claude` reads the current configured port and auth token each time it starts, sets the Claude Code environment variables (including a 190k-token `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction), and then launches the real `claude` command.
+`gc-claud` reads the current configured port and auth token each time it starts, sets the Claude Code environment variables (including a 190k-token `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction), and then launches the real `claude` command.
 
 ## Choose A Provider
 
@@ -327,10 +327,10 @@ For restricted environments, corporate networks, or region-locked models, the pr
 For terminal use, prefer the installed launcher:
 
 ```bash
-fcc-claude
+gc-claud
 ```
 
-Keep `fcc-server` running while you work. The Admin UI manages proxy config, restarts the server when runtime settings change, and `fcc-claude` reads the current Admin UI-managed port and auth token every time it starts. It also sets `CLAUDE_CODE_AUTO_COMPACT_WINDOW` to `190000` for auto-compaction.
+Keep `gc-server` running while you work. The Admin UI manages proxy config, restarts the server when runtime settings change, and `gc-claud` reads the current Admin UI-managed port and auth token every time it starts. It also sets `CLAUDE_CODE_AUTO_COMPACT_WINDOW` to `190000` for auto-compaction.
 
 ### 2. VS Code Extension
 
@@ -395,7 +395,7 @@ The bot wrapper runs Claude Code sessions remotely, streams progress, supports r
 
 **Configure in the Admin UI**
 
-1. With `fcc-server` running, open the **Admin UI** URL from the terminal output.
+1. With `gc-server` running, open the **Admin UI** URL from the terminal output.
 2. In the sidebar, choose **Messaging**.
 3. Set **Messaging Platform** to **discord** or **telegram**.
 4. For Discord, paste **Discord Bot Token** and **Allowed Discord Channels**. For Telegram, paste **Telegram Bot Token** and **Allowed Telegram User ID**.
@@ -450,7 +450,7 @@ Windows PowerShell:
 & ([scriptblock]::Create((irm "https://github.com/AtlasRoX/Helix/blob/main/scripts/install.ps1?raw=1"))) -VoiceLocal -TorchBackend cu130
 ```
 
-Restart `fcc-server` after reinstalling.
+Restart `gc-server` after reinstalling.
 
 In the **Admin UI**, open **Messaging** and scroll to **Voice**. Turn on **Voice Notes**, choose **Whisper Device** (`cpu`, `cuda`, or `nvidia_nim`), set **Whisper Model**, and enter **Hugging Face Token** when your setup needs it. For **nvidia_nim** transcription, install the `voice` extra and set **NVIDIA NIM API Key** on the **Providers** view. The screenshot above shows the **Voice** block in the same view.
 
@@ -512,10 +512,12 @@ Run them in that order before pushing. CI enforces the same checks.
 
 `pyproject.toml` installs:
 
-- `fcc-server`: starts the proxy with configured host and port.
+- `gc-server`: starts the proxy with configured host and port.
+- `gc-claud`: launches Claude Code with the configured local proxy URL, auth token, model discovery flag, and a 190k `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction.
+- `fcc-server`: compatibility alias for `gc-server`.
+- `fcc-claude`: compatibility alias for `gc-claud`.
+- `free-claude-code`: compatibility alias for `gc-server`.
 - `fcc-init`: optional advanced scaffold for `~/.fcc/.env`; prefer the **Admin UI** for normal configuration.
-- `fcc-claude`: launches Claude Code with the configured local proxy URL, auth token, model discovery flag, and a 190k `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction.
-- `free-claude-code`: compatibility alias for `fcc-server`.
 
 ### 5. Extending
 

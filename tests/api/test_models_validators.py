@@ -1,3 +1,5 @@
+from typing import cast
+
 from api.models.anthropic import Message, MessagesRequest, TokenCountRequest
 
 
@@ -47,14 +49,18 @@ def test_messages_request_normalizes_system_role_messages_dict_like_objects():
     class DictLike(dict):
         pass
 
-    request = MessagesRequest(
-        model="claude-3-opus",
-        max_tokens=100,
-        messages=[
+    messages = cast(
+        list[Message],
+        [
             DictLike({"role": "user", "content": "first"}),
             DictLike({"role": "system", "content": "system prompt"}),
             DictLike({"role": "user", "content": "second"}),
         ],
+    )
+    request = MessagesRequest(
+        model="claude-3-opus",
+        max_tokens=100,
+        messages=messages,
     )
 
     assert [message.role for message in request.messages] == ["user", "user"]

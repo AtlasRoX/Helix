@@ -48,7 +48,7 @@ def _load_env_template() -> str:
 
 
 def serve() -> None:
-    """Start the FastAPI server (registered as `fcc-server` script)."""
+    """Start the FastAPI server (registered as `gc-server` / `fcc-server` scripts)."""
     opened_admin_browser = False
     try:
         try:
@@ -134,9 +134,7 @@ def init() -> None:
     migrated_from = _migrate_legacy_env_if_missing()
     if migrated_from is not None:
         print(f"Config migrated from {migrated_from} to {env_file}")
-        print(
-            "Edit it to set your API keys and model preferences, then run: fcc-server"
-        )
+        print("Edit it to set your API keys and model preferences, then run: gc-server")
         return
 
     if env_file.exists():
@@ -148,7 +146,7 @@ def init() -> None:
     template = _load_env_template()
     env_file.write_text(template, encoding="utf-8")
     print(f"Config created at {env_file}")
-    print("Edit it to set your API keys and model preferences, then run: fcc-server")
+    print("Edit it to set your API keys and model preferences, then run: gc-server")
 
 
 def _migrate_legacy_env_if_missing() -> Path | None:
@@ -218,7 +216,7 @@ def launch_claude(argv: Sequence[str] | None = None) -> None:
             f"Free Claude Code proxy is not reachable at {proxy_root_url}: {error}",
             file=sys.stderr,
         )
-        print("Start it in another terminal with: fcc-server", file=sys.stderr)
+        print("Start it in another terminal with: gc-server", file=sys.stderr)
         raise SystemExit(1)
 
     args = list(sys.argv[1:] if argv is None else argv)

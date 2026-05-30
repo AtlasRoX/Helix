@@ -400,4 +400,4 @@ Write-Step "Installing or updating Free Claude Code"
 Install-FreeClaudeCode
 
 Write-Host ""
-Write-Host "Free Claude Code is installed. Start the proxy with: fcc-server"
+Write-Host "Free Claude Code is installed. Start the proxy with: gc-server"

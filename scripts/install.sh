@@ -354,4 +354,4 @@ run uv python install "$PYTHON_VERSION"
 step "Installing or updating Free Claude Code"
 install_free_claude_code
 
-printf '\nFree Claude Code is installed. Start the proxy with: fcc-server\n'
+printf '\nFree Claude Code is installed. Start the proxy with: gc-server\n'
