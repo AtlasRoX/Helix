@@ -12,7 +12,17 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$RepoGitUrl = "git+https://github.com/Alishahryar1/free-claude-code.git"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path -ErrorAction SilentlyContinue
+$RepoRoot = if ($ScriptDir) { Split-Path -Parent $ScriptDir -ErrorAction SilentlyContinue } else { $null }
+$PyprojectPath = if ($RepoRoot) { Join-Path $RepoRoot "pyproject.toml" } else { $null }
+
+if ($PyprojectPath -and (Test-Path $PyprojectPath)) {
+    # If run from within a local checkout, install from the local directory root
+    $RepoSource = $RepoRoot
+} else {
+    $RepoSource = "git+https://github.com/AtlasRoX/Helix.git"
+}
+
 $PythonVersion = "3.14.0"
 $MinUvVersion = "0.11.0"
 $UvInstallUrl = "https://astral.sh/uv/install.ps1"
@@ -324,20 +334,32 @@ function Get-PackageSpec {
         throw "-TorchBackend requires -VoiceLocal or -VoiceAll."
     }
 
+    $isLocal = Test-Path $RepoSource -PathType Container
+
     if ($includeNim -and $includeLocal) {
-        return "free-claude-code[voice,voice_local] @ $RepoGitUrl"
+        if ($isLocal) {
+            return "${RepoSource}[voice,voice_local]"
+        }
+        return "free-claude-code[voice,voice_local] @ $RepoSource"
     }
 
     if ($includeNim) {
-        return "free-claude-code[voice] @ $RepoGitUrl"
+        if ($isLocal) {
+            return "${RepoSource}[voice]"
+        }
+        return "free-claude-code[voice] @ $RepoSource"
     }
 
     if ($includeLocal) {
-        return "free-claude-code[voice_local] @ $RepoGitUrl"
+        if ($isLocal) {
+            return "${RepoSource}[voice_local]"
+        }
+        return "free-claude-code[voice_local] @ $RepoSource"
     }
 
-    return $RepoGitUrl
+    return $RepoSource
 }
+
 
 function Install-FreeClaudeCode {
     $packageSpec = Get-PackageSpec

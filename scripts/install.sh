@@ -1,7 +1,16 @@
 #!/bin/sh
 set -eu
 
-REPO_GIT_URL="git+https://github.com/Alishahryar1/free-claude-code.git"
+# Detect if running from local git repository clone
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+
+if [ -f "$REPO_ROOT/pyproject.toml" ]; then
+    REPO_SOURCE="$REPO_ROOT"
+else
+    REPO_SOURCE="git+https://github.com/AtlasRoX/Helix.git"
+fi
+
 PYTHON_VERSION="3.14.0"
 MIN_UV_VERSION="0.11.0"
 UV_INSTALL_URL="https://astral.sh/uv/install.sh"
@@ -291,16 +300,34 @@ package_spec() {
         fail "--torch-backend requires --voice-local or --voice-all."
     fi
 
+    is_local=0
+    if [ -d "$REPO_SOURCE" ]; then
+        is_local=1
+    fi
+
     if [ "$include_nim" -eq 1 ] && [ "$include_local" -eq 1 ]; then
-        printf 'free-claude-code[voice,voice_local] @ %s' "$REPO_GIT_URL"
+        if [ "$is_local" -eq 1 ]; then
+            printf '%s[voice,voice_local]' "$REPO_SOURCE"
+        else
+            printf 'free-claude-code[voice,voice_local] @ %s' "$REPO_SOURCE"
+        fi
     elif [ "$include_nim" -eq 1 ]; then
-        printf 'free-claude-code[voice] @ %s' "$REPO_GIT_URL"
+        if [ "$is_local" -eq 1 ]; then
+            printf '%s[voice]' "$REPO_SOURCE"
+        else
+            printf 'free-claude-code[voice] @ %s' "$REPO_SOURCE"
+        fi
     elif [ "$include_local" -eq 1 ]; then
-        printf 'free-claude-code[voice_local] @ %s' "$REPO_GIT_URL"
+        if [ "$is_local" -eq 1 ]; then
+            printf '%s[voice_local]' "$REPO_SOURCE"
+        else
+            printf 'free-claude-code[voice_local] @ %s' "$REPO_SOURCE"
+        fi
     else
-        printf '%s' "$REPO_GIT_URL"
+        printf '%s' "$REPO_SOURCE"
     fi
 }
+
 
 install_free_claude_code() {
     spec=$(package_spec)

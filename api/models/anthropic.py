@@ -111,31 +111,54 @@ def _merge_system_values(existing: Any, additions: list[Any]) -> Any:
 
 
 def _normalize_system_role_messages(data: Any) -> Any:
-    if not isinstance(data, dict):
+    is_dict = isinstance(data, dict)
+    if not is_dict and not hasattr(data, "messages"):
         return data
 
-    messages = data.get("messages")
+    messages = data.get("messages") if is_dict else getattr(data, "messages", None)
     if not isinstance(messages, list):
         return data
 
     system_contents: list[Any] = []
     normalized_messages: list[Any] = []
     for message in messages:
-        role = message.get("role") if isinstance(message, dict) else None
-        if role == Role.system:
-            system_contents.append(message.get("content", ""))
+        role = None
+        if isinstance(message, dict):
+            role = message.get("role")
+        elif hasattr(message, "role"):
+            role = message.role
+        elif hasattr(message, "get"):
+            role = message.get("role")
+
+        if role == Role.system or role == "system":
+            content = ""
+            if isinstance(message, dict):
+                content = message.get("content", "")
+            elif hasattr(message, "content"):
+                content = message.content
+            elif hasattr(message, "get"):
+                content = message.get("content", "")
+
+            system_contents.append(content)
             continue
         normalized_messages.append(message)
 
     if not system_contents:
         return data
 
-    normalized = dict(data)
-    normalized["messages"] = normalized_messages
-    normalized["system"] = _merge_system_values(
-        normalized.get("system"), system_contents
-    )
-    return normalized
+    if is_dict:
+        normalized = dict(data)
+        normalized["messages"] = normalized_messages
+        normalized["system"] = _merge_system_values(
+            normalized.get("system"), system_contents
+        )
+        return normalized
+    else:
+        data.messages = normalized_messages
+        data.system = _merge_system_values(
+            getattr(data, "system", None), system_contents
+        )
+        return data
 
 
 # =============================================================================

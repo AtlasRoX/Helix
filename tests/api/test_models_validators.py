@@ -28,6 +28,39 @@ def test_messages_request_normalizes_system_role_messages():
     assert request.system == "system prompt"
 
 
+def test_messages_request_normalizes_system_role_messages_pydantic_objects():
+    request = MessagesRequest(
+        model="claude-3-opus",
+        max_tokens=100,
+        messages=[
+            Message(role="user", content="first"),
+            Message.model_construct(role="system", content="system prompt"),
+            Message(role="user", content="second"),
+        ],
+    )
+
+    assert [message.role for message in request.messages] == ["user", "user"]
+    assert request.system == "system prompt"
+
+
+def test_messages_request_normalizes_system_role_messages_dict_like_objects():
+    class DictLike(dict):
+        pass
+
+    request = MessagesRequest(
+        model="claude-3-opus",
+        max_tokens=100,
+        messages=[
+            DictLike({"role": "user", "content": "first"}),
+            DictLike({"role": "system", "content": "system prompt"}),
+            DictLike({"role": "user", "content": "second"}),
+        ],
+    )
+
+    assert [message.role for message in request.messages] == ["user", "user"]
+    assert request.system == "system prompt"
+
+
 def test_messages_request_merges_system_role_messages_with_existing_system():
     request = MessagesRequest.model_validate(
         {
