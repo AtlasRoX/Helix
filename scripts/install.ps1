@@ -12,7 +12,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path -ErrorAction SilentlyContinue
+$ScriptDir = $null
+if ($MyInvocation.MyCommand -is [System.Management.Automation.ExternalScriptInfo]) {
+    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path -ErrorAction SilentlyContinue
+}
 $RepoRoot = if ($ScriptDir) { Split-Path -Parent $ScriptDir -ErrorAction SilentlyContinue } else { $null }
 $PyprojectPath = if ($RepoRoot) { Join-Path $RepoRoot "pyproject.toml" } else { $null }
 
