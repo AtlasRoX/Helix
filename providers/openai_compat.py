@@ -79,9 +79,10 @@ class OpenAIChatTransport(BaseProvider):
             max_concurrency=config.max_concurrency,
         )
         http_client = None
-        if config.proxy:
+        if config.proxy or not config.verify_ssl:
             http_client = httpx.AsyncClient(
-                proxy=config.proxy,
+                proxy=config.proxy or None,
+                verify=config.verify_ssl,
                 timeout=httpx.Timeout(
                     config.http_read_timeout,
                     connect=config.http_connect_timeout,

@@ -127,6 +127,13 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         description="Used by NVIDIA NIM chat and optional NIM voice transcription.",
     ),
     ConfigFieldSpec(
+        "NVIDIA_NIM_BASE_URL",
+        "NVIDIA NIM Base URL",
+        "providers",
+        settings_attr="nvidia_nim_base_url",
+        description="Custom base URL for NVIDIA NIM. Override to route via mirror or regional reverse proxy.",
+    ),
+    ConfigFieldSpec(
         "OPENROUTER_API_KEY",
         "OpenRouter API Key",
         "providers",
@@ -525,6 +532,15 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "number",
         settings_attr="http_connect_timeout",
         default="60",
+    ),
+    ConfigFieldSpec(
+        "HTTP_VERIFY_SSL",
+        "HTTP Verify SSL",
+        "runtime",
+        "boolean",
+        settings_attr="verify_ssl",
+        default="true",
+        description="Enable SSL verification for outbound provider requests. Set to false to allow self-signed proxy certs.",
     ),
     ConfigFieldSpec(
         "HOST",

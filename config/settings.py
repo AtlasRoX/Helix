@@ -158,6 +158,7 @@ class Settings(BaseSettings):
 
     # ==================== NVIDIA NIM Config ====================
     nvidia_nim_api_key: str = ""
+    nvidia_nim_base_url: str = Field(default="", validation_alias="NVIDIA_NIM_BASE_URL")
 
     # ==================== LM Studio Config ====================
     lm_studio_base_url: str = Field(
@@ -236,6 +237,10 @@ class Settings(BaseSettings):
     http_connect_timeout: float = Field(
         default=HTTP_CONNECT_TIMEOUT_DEFAULT,
         validation_alias="HTTP_CONNECT_TIMEOUT",
+    )
+    verify_ssl: bool = Field(
+        default=True,
+        validation_alias="HTTP_VERIFY_SSL",
     )
 
     # ==================== Fast Prefix Detection ====================

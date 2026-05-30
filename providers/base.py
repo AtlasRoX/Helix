@@ -27,6 +27,7 @@ class ProviderConfig(BaseModel):
     http_connect_timeout: float = HTTP_CONNECT_TIMEOUT_DEFAULT
     enable_thinking: bool = True
     proxy: str = ""
+    verify_ssl: bool = True
     log_raw_sse_events: bool = False
     log_api_error_tracebacks: bool = False
 

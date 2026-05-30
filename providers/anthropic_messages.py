@@ -84,6 +84,7 @@ class AnthropicMessagesTransport(BaseProvider):
         self._client = httpx.AsyncClient(
             base_url=self._base_url,
             proxy=config.proxy or None,
+            verify=config.verify_ssl,
             timeout=httpx.Timeout(
                 config.http_read_timeout,
                 connect=config.http_connect_timeout,

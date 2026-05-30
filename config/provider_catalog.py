@@ -62,6 +62,7 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_url="https://build.nvidia.com/settings/api-keys",
         credential_attr="nvidia_nim_api_key",
         default_base_url=NVIDIA_NIM_DEFAULT_BASE,
+        base_url_attr="nvidia_nim_base_url",
         proxy_attr="nvidia_nim_proxy",
         capabilities=("chat", "streaming", "tools", "thinking", "rate_limit"),
     ),
