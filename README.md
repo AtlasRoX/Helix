@@ -114,6 +114,11 @@ Get a key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/setti
 
 In the Admin UI, paste it into `NVIDIA_NIM_API_KEY`. The default `MODEL` is `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`.
 
+To support region-locked models or restricted enterprise environments, you can configure:
+- **`NVIDIA_NIM_BASE_URL`**: Override the default API endpoint (`https://integrate.api.nvidia.com/v1`) with regional endpoints or locally hosted NIM instances.
+- **`NVIDIA_NIM_PROXY`**: Route NIM traffic through an HTTP/HTTPS proxy.
+- **`HTTP_VERIFY_SSL`**: Disable SSL verification (set to `false`) if your proxy or local endpoint uses self-signed certificates.
+
 Popular examples:
 
 - `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`
@@ -306,6 +311,14 @@ In the Admin UI, keep or update `OLLAMA_BASE_URL`, then set `MODEL` to the same 
 Each model tier can use a different provider by setting `MODEL_OPUS`, `MODEL_SONNET`, and `MODEL_HAIKU` in the Admin UI. Leave a tier blank to inherit `MODEL`.
 
 For example, you can route Opus to `nvidia_nim/moonshotai/kimi-k2.5`, Sonnet to `open_router/deepseek/deepseek-r1-0528:free`, Haiku to `lmstudio/unsloth/GLM-4.7-Flash-GGUF`, and keep the fallback `MODEL` on `zai/glm-5.1`.
+
+### 19. Proxies, Custom Base URLs, and SSL Verification
+
+For restricted environments, corporate networks, or region-locked models, the proxy server allows you to configure advanced network routing:
+
+- **Provider-Specific Proxies**: Each provider can have its own HTTP/HTTPS proxy (e.g. `NVIDIA_NIM_PROXY`, `OPENROUTER_PROXY`, `DEEPSEEK_PROXY`, etc.) configured in the **Admin UI** or `.env` file. This lets you route traffic for different model providers through separate network gateways.
+- **Custom Base URLs**: If you host models locally (like a local NIM instance, llama.cpp, Ollama, LM Studio) or use regional endpoint mirrors, configure the custom base URL (e.g., `NVIDIA_NIM_BASE_URL`) in the Admin UI to redirect traffic to your regional or private endpoints.
+- **SSL Verification Override**: Set `HTTP_VERIFY_SSL` to `false` in the Admin UI (or `.env` file) to bypass SSL certificate checks if your proxy or regional mirror uses self-signed certificates.
 
 ## Connect Claude Code
 
