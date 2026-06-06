@@ -71,7 +71,10 @@ class OpenAIChatTransport(BaseProvider):
         super().__init__(config)
         self._provider_name = provider_name
         self._api_key = api_key
-        self._base_url = base_url.rstrip("/")
+        base_url_clean = base_url.rstrip("/")
+        if base_url_clean.lower().endswith("/chat/completions"):
+            base_url_clean = base_url_clean[: -len("/chat/completions")].rstrip("/")
+        self._base_url = base_url_clean
         self._global_rate_limiter = GlobalRateLimiter.get_scoped_instance(
             provider_name.lower(),
             rate_limit=config.rate_limit,

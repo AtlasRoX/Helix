@@ -21,23 +21,165 @@
           </div>
         </div>
         <nav id="sectionNav" class="section-nav" aria-label="Admin views"></nav>
+        
+        <button id="themeToggleBtn" class="theme-toggle" type="button" title="Toggle Light/Dark Theme">
+          <svg id="themeToggleMoon" viewBox="0 0 24 24" style="display: block;">
+            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+          </svg>
+          <svg id="themeToggleSun" viewBox="0 0 24 24" style="display: none;">
+            <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM5.64 4.22a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 0 1-1.42 1.42L5.64 5.64a1 1 0 0 1 0-1.42zm11.31 11.31a1 1 0 0 1 1.42 0l1.41 1.41a1 1 0 0 1-1.42 1.42l-1.41-1.41a1 1 0 0 1 0-1.42zM2 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H3a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM5.64 19.78a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 0 1 1.42 1.42l-1.41 1.41a1 1 0 0 1-1.42 0zm11.31-11.31a1 1 0 0 1 0-1.42l1.41-1.41a1 1 0 0 1 1.42 1.42l-1.41 1.41a1 1 0 0 1-1.42 0z"/>
+          </svg>
+          <span id="themeToggleText">Light Mode</span>
+        </button>
+
+        <div class="backup-buttons">
+          <button id="exportConfigBtn" class="ghost-button" type="button" title="Download backup of current configuration">Export</button>
+          <button id="importConfigBtn" class="ghost-button" type="button" title="Upload backup configuration file">Import</button>
+          <input type="file" id="importConfigFile" accept=".json" style="display:none;" />
+        </div>
       </aside>
 
       <main class="main">
         <header class="topbar">
-          <div>
-            <h2 id="pageTitle">Providers</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <h2 id="pageTitle">Dashboard</h2>
+            <button id="triggerRestartBtn" class="secondary-button" type="button" style="display:none;" title="Trigger safe application restart">Restart Server</button>
           </div>
         </header>
 
         <div id="adminViews" class="admin-views">
-          <section id="view-providers" class="admin-view active" data-view="providers">
+          <section id="view-dashboard" class="admin-view active" data-view="dashboard">
+            <!-- 1. System Metrics Grid -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <h4>System Uptime</h4>
+                <div id="metricUptime" class="metric-val">--</div>
+                <div class="metric-desc">Helix Proxy running time</div>
+              </div>
+              <div class="metric-card">
+                <h4>CPU Usage</h4>
+                <div id="metricCPU" class="metric-val">--</div>
+                <div class="metric-progress">
+                  <div id="metricCPUBar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+              </div>
+              <div class="metric-card">
+                <h4>Memory Usage</h4>
+                <div id="metricMemory" class="metric-val">--</div>
+                <div class="metric-progress">
+                  <div id="metricMemoryBar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+              </div>
+              <div class="metric-card">
+                <h4>Active Async Tasks</h4>
+                <div id="metricThreads" class="metric-val">--</div>
+                <div class="metric-desc">Concurrent requests & tasks</div>
+              </div>
+            </div>
+
+            <!-- Real-time metrics canvas chart -->
+            <div class="canvas-container">
+              <h3>Real-time Resource Chart</h3>
+              <canvas id="metricsCanvas"></canvas>
+            </div>
+
+            <!-- 2. Token & Cost Analytics -->
+            <section class="provider-strip" aria-label="Token & Cost Analytics">
+              <div class="strip-header">
+                <h3>Token & Cost Analytics</h3>
+              </div>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <h4>Total Requests</h4>
+                  <div id="analyticsRequests" class="metric-val">0</div>
+                  <div id="analyticsErrors" class="metric-desc">0 errors</div>
+                </div>
+                <div class="metric-card">
+                  <h4>Input / Prompt Tokens</h4>
+                  <div id="analyticsPromptTokens" class="metric-val">0</div>
+                  <div class="metric-desc">Tokens sent to providers</div>
+                </div>
+                <div class="metric-card">
+                  <h4>Output / Completion Tokens</h4>
+                  <div id="analyticsCompletionTokens" class="metric-val">0</div>
+                  <div class="metric-desc">Tokens returned by providers</div>
+                </div>
+                <div class="metric-card">
+                  <h4>Estimated Total Cost</h4>
+                  <div id="analyticsCost" class="metric-val">$0.0000</div>
+                  <div class="metric-desc">Based on token usage metrics</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Provider diagnostic network probe table -->
+            <div class="diagnostic-table-card">
+              <div class="diagnostic-table-header">
+                <h3>Diagnostic Network Probe</h3>
+                <button id="runDiagnosticBtn" class="primary-button" type="button">Run Validation Probe</button>
+              </div>
+              <table class="diagnostic-table">
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Target base URL</th>
+                    <th>HTTP Status</th>
+                    <th>Ping Latency</th>
+                  </tr>
+                </thead>
+                <tbody id="diagnosticTableBody">
+                  <tr>
+                    <td colspan="4" style="text-align: center; color: var(--muted);">Click 'Run Validation Probe' to start validation checks.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="notification-toggle-container">
+                <input type="checkbox" id="webNotificationsToggle" />
+                <label for="webNotificationsToggle">Enable Browser Desktop Notifications for diagnostics</label>
+              </div>
+            </div>
+
+            <!-- 3. Admin Authorization Token Manager -->
+            <div class="token-manager-card">
+              <div class="section-heading">
+                <h3>API Authorization Token</h3>
+                <p>Use this token in your CLI (e.g. set ANTHROPIC_AUTH_TOKEN) to authorize client access. <span id="complexityBadge" class="complexity-badge">Unknown</span></p>
+              </div>
+              <div class="token-display-row">
+                <div id="authTokenDisplay" class="token-code masked">••••••••••••••••</div>
+                <button id="toggleAuthTokenBtn" class="ghost-button" type="button">Show</button>
+                <button id="copyAuthTokenBtn" class="secondary-button" type="button">Copy</button>
+                <button id="generateAuthTokenBtn" class="secondary-button" type="button">Generate Secure</button>
+              </div>
+            </div>
+
+            <!-- 4. Quick Presets Panel -->
+            <div class="token-manager-card">
+              <div class="section-heading">
+                <h3>Quick Routing Templates</h3>
+                <p>Instantly configure your routing presets and default model using popular templates.</p>
+              </div>
+              <div class="preset-container">
+                <button type="button" class="preset-btn" data-preset="nim-free">NVIDIA NIM Free Tier</button>
+                <button type="button" class="preset-btn" data-preset="groq-fast">Groq Fast Reasoning</button>
+                <button type="button" class="preset-btn" data-preset="gemini-flash">Gemini Flash Multimodal</button>
+                <button type="button" class="preset-btn" data-preset="ollama-local">Ollama Local Offline</button>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-providers" class="admin-view" data-view="providers" hidden>
             <section class="provider-strip" aria-label="Provider status">
               <div class="strip-header">
                 <h3>Providers</h3>
               </div>
               <div id="providerGrid" class="provider-grid"></div>
             </section>
+            
+            <div class="settings-search-container">
+              <input type="text" class="settings-search-input" data-target="providersSections" placeholder="Search and filter provider configuration settings..." />
+            </div>
+            
             <div
               id="providersSections"
               class="form-sections"
@@ -46,6 +188,38 @@
           </section>
 
           <section id="view-model_config" class="admin-view" data-view="model_config" hidden>
+            <div class="settings-search-container">
+              <input type="text" class="settings-search-input" data-target="modelConfigSections" placeholder="Search and filter model configuration settings..." />
+            </div>
+
+            <!-- Dynamic Model Mappings Helper Builder Form -->
+            <div class="token-manager-card">
+              <div class="section-heading">
+                <h3>Custom Model Override Builder</h3>
+                <p>Helper form to map Claude CLI model types (Opus, Sonnet, Haiku) to upstream providers.</p>
+              </div>
+              <div class="mapping-builder-form">
+                <div class="field">
+                  <label for="builderOverrideType">Claude Tier</label>
+                  <select id="builderOverrideType">
+                    <option value="MODEL">MODEL (Default Fallback)</option>
+                    <option value="MODEL_OPUS">MODEL_OPUS (Opus override)</option>
+                    <option value="MODEL_SONNET">MODEL_SONNET (Sonnet override)</option>
+                    <option value="MODEL_HAIKU">MODEL_HAIKU (Haiku override)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="builderProvider">Target Provider</label>
+                  <select id="builderProvider"></select>
+                </div>
+                <div class="field">
+                  <label for="builderModel">Target Model</label>
+                  <select id="builderModel"></select>
+                </div>
+                <button id="applyBuilderOverrideBtn" class="primary-button" type="button">Set Override</button>
+              </div>
+            </div>
+
             <div
               id="modelConfigSections"
               class="form-sections"
@@ -53,12 +227,120 @@
             ></div>
           </section>
 
+          <section id="view-playground" class="admin-view" data-view="playground" hidden>
+            <div class="playground-container">
+              <div class="playground-sidebar">
+                <div class="field">
+                  <label for="playProvider">Provider</label>
+                  <select id="playProvider"></select>
+                </div>
+                <div class="field">
+                  <label for="playModel">Model</label>
+                  <select id="playModel"></select>
+                </div>
+                <div class="field" style="margin-top: 10px;">
+                  <label for="playSystem">System Instruction</label>
+                  <textarea id="playSystem" style="min-height: 60px; font-size: 13px;" placeholder="Optional system instruction override..."></textarea>
+                </div>
+                <div class="field" style="margin-top: 10px;">
+                  <label for="playTemperature" style="display:flex; justify-content:space-between;">
+                    <span>Temperature:</span>
+                    <span id="playTempVal">1.0</span>
+                  </label>
+                  <input type="range" id="playTemperature" min="0.0" max="2.0" step="0.1" value="1.0" style="width:100%;" />
+                </div>
+                <div class="field" style="margin-top: 10px;">
+                  <label for="playThinking" style="justify-content: flex-start; gap: 8px;">
+                    <input type="checkbox" id="playThinking" checked />
+                    Enable Thinking / Reasoning
+                  </label>
+                </div>
+                
+                <div class="field" style="margin-top: 15px;">
+                  <label>Prompt History</label>
+                  <div id="promptHistoryList" style="display:flex; flex-direction:column; gap:6px; max-height: 120px; overflow-y:auto; border: 1px solid var(--line); padding: 8px; border-radius: 4px;">
+                    <span style="font-size:11px; color:var(--muted); font-style:italic;">No prompt history yet.</span>
+                  </div>
+                </div>
+
+                <button id="clearChatBtn" class="secondary-button" type="button" style="margin-top: auto;">Clear Conversation</button>
+              </div>
+              <div class="playground-chat-area">
+                <div id="chatBox" class="chat-box">
+                  <div class="chat-message assistant">
+                    Hello! I'm the Helix Model Playground. Select a provider and model on the left, then enter a prompt below to test your connection in real-time.
+                  </div>
+                </div>
+                <div class="playground-input-area">
+                  <textarea id="playPrompt" placeholder="Type a message to test provider..."></textarea>
+                  <button id="playSendBtn" class="primary-button" type="button">Send</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-logs" class="admin-view" data-view="logs" hidden>
+            <div class="log-container">
+              <div class="log-controls">
+                <input type="text" id="logSearch" placeholder="Search/Filter logs..." style="flex: 1;" />
+                <label for="logLinesLimit">Lines:</label>
+                <select id="logLinesLimit">
+                  <option value="50">50</option>
+                  <option value="100" selected>100</option>
+                  <option value="250">250</option>
+                  <option value="500">500</option>
+                </select>
+                <label>
+                  <input type="checkbox" id="logAutoScroll" checked />
+                  Auto-scroll
+                </label>
+                <label>
+                  <input type="checkbox" id="logWordWrap" checked />
+                  Word-wrap
+                </label>
+                <button id="pauseLogsBtn" class="secondary-button" type="button">Pause Stream</button>
+                <button id="downloadLogsBtn" class="secondary-button" type="button">Download log</button>
+                <button id="clearLogsBtn" class="ghost-button" type="button">Clear Console</button>
+
+                <div class="log-level-filters">
+                  <label class="log-level-filter-label info">
+                    <input type="checkbox" id="filterLogInfo" checked /> INFO
+                  </label>
+                  <label class="log-level-filter-label warn">
+                    <input type="checkbox" id="filterLogWarn" checked /> WARN
+                  </label>
+                  <label class="log-level-filter-label error">
+                    <input type="checkbox" id="filterLogErr" checked /> ERROR
+                  </label>
+                  <label class="log-level-filter-label debug">
+                    <input type="checkbox" id="filterLogDebug" checked /> DEBUG
+                  </label>
+                </div>
+              </div>
+              <div id="logConsole" class="log-console"></div>
+            </div>
+          </section>
+
           <section id="view-messaging" class="admin-view" data-view="messaging" hidden>
+            <div class="settings-search-container">
+              <input type="text" class="settings-search-input" data-target="messagingSections" placeholder="Search and filter messaging settings..." />
+            </div>
+
             <div
               id="messagingSections"
               class="form-sections"
               aria-label="Messaging configuration"
             ></div>
+          </section>
+
+          <section id="view-env" class="admin-view" data-view="env" hidden>
+            <div class="env-code-container">
+              <div class="section-heading">
+                <h3>Raw Environment Variables File</h3>
+                <p>Read-only view of the active server `.env` configuration file loaded at server start.</p>
+              </div>
+              <pre id="envPre" class="env-pre"></pre>
+            </div>
           </section>
         </div>
       </main>
@@ -75,6 +357,14 @@
         </div>
       </footer>
     </div>
+
+    <!-- System Restart Overlay Spinner screen -->
+    <div id="restartOverlay" class="restart-overlay">
+      <div class="restart-spinner"></div>
+      <h2>Restarting Helix Server</h2>
+      <p>Applying configurations and reconnecting endpoints...</p>
+    </div>
+
     <script src="/admin/assets/admin.js"></script>
   </body>
 </html>

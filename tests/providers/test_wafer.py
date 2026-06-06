@@ -254,3 +254,12 @@ async def test_stream_non_200_maps_to_anthropic_error_event(wafer_provider):
         events, user_message_substr="Provider API request failed"
     )
     assert "REQ_WAFER" in "".join(events)
+
+
+def test_base_url_sanitization_messages():
+    config = ProviderConfig(
+        api_key="test-wafer-key", base_url="https://pass.wafer.ai/v1/messages"
+    )
+    with patch("httpx.AsyncClient"):
+        provider = WaferProvider(config)
+    assert provider._base_url == WAFER_DEFAULT_BASE

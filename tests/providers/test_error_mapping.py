@@ -170,6 +170,12 @@ def test_user_visible_message_for_mapped_provider_error_405():
     assert "ACME" in msg and "405" in msg
 
 
+def test_get_user_facing_error_message_preserves_specific_apierror():
+    mapped = APIError("Model not found in NIM", status_code=404, raw_error="")
+    msg = get_user_facing_error_message(mapped)
+    assert msg == "Model not found in NIM"
+
+
 def test_streaming_transports_pass_scoped_rate_limiter_to_map_error():
     """Guardrail: streaming adapters must scope reactive 429 handling per provider."""
     root = Path(__file__).resolve().parents[2]

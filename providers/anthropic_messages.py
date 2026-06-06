@@ -74,7 +74,10 @@ class AnthropicMessagesTransport(BaseProvider):
         super().__init__(config)
         self._provider_name = provider_name
         self._api_key = config.api_key
-        self._base_url = (config.base_url or default_base_url).rstrip("/")
+        base_url_clean = (config.base_url or default_base_url).rstrip("/")
+        if base_url_clean.lower().endswith("/messages"):
+            base_url_clean = base_url_clean[: -len("/messages")].rstrip("/")
+        self._base_url = base_url_clean
         self._global_rate_limiter = GlobalRateLimiter.get_scoped_instance(
             provider_name.lower(),
             rate_limit=config.rate_limit,

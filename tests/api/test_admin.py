@@ -510,3 +510,77 @@ def test_admin_launch_url_uses_loopback_for_wildcard_host():
     settings = Settings.model_construct(host="0.0.0.0", port=8082)
 
     assert local_admin_url(settings) == "http://127.0.0.1:8082/admin"
+
+
+def test_admin_restart_no_callback_returns_501(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    app = create_app(lifespan_enabled=False)
+    if hasattr(app.state, "admin_restart_callback"):
+        delattr(app.state, "admin_restart_callback")
+
+    response = _local_client(app).post("/admin/api/restart")
+    assert response.status_code == 501
+    assert response.json()["detail"] == "Automatic restart is not configured"
+
+
+def test_admin_restart_with_callback_succeeds(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    app = create_app(lifespan_enabled=False)
+    callbacks = []
+
+    async def restart_callback():
+        callbacks.append("restarted")
+
+    app.state.admin_restart_callback = restart_callback
+
+    response = _local_client(app).post("/admin/api/restart")
+    assert response.status_code == 200
+    assert response.json() == {"status": "restarting"}
+    assert callbacks == ["restarted"]
+
+
+def test_admin_logs_download_not_found_returns_404(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    app = create_app(lifespan_enabled=False)
+
+    response = _local_client(app).get("/admin/api/logs/download")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Log file not found"
+
+
+def test_admin_logs_download_success(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    log_dir = tmp_path / ".fcc" / "logs"
+    log_dir.mkdir(parents=True)
+    log_file = log_dir / "server.log"
+    log_file.write_text("Hello log file content!", encoding="utf-8")
+
+    app = create_app(lifespan_enabled=False)
+
+    response = _local_client(app).get("/admin/api/logs/download")
+    assert response.status_code == 200
+    assert response.text == "Hello log file content!"
+    assert 'filename="server.log"' in response.headers.get("content-disposition", "")
+    assert response.headers.get("content-type") == "text/plain; charset=utf-8"
+
+
+def test_admin_get_raw_env_not_found(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    app = create_app(lifespan_enabled=False)
+
+    response = _local_client(app).get("/admin/api/env/raw")
+    assert response.status_code == 200
+    assert response.json() == {"content": "# Managed env file does not exist yet"}
+
+
+def test_admin_get_raw_env_success(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    env_file = tmp_path / ".fcc" / ".env"
+    env_file.parent.mkdir(parents=True, exist_ok=True)
+    env_file.write_text("TEST_KEY=test_value\nPORT=8080", encoding="utf-8")
+
+    app = create_app(lifespan_enabled=False)
+
+    response = _local_client(app).get("/admin/api/env/raw")
+    assert response.status_code == 200
+    assert response.json() == {"content": "TEST_KEY=test_value\nPORT=8080"}

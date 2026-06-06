@@ -771,3 +771,17 @@ async def test_stream_response_bad_request_without_reasoning_budget_does_not_ret
     assert mock_create.await_count == 1
     assert any("Invalid request sent to provider" in event for event in events)
     assert any("message_stop" in event for event in events)
+
+
+@pytest.mark.asyncio
+async def test_base_url_sanitization_chat_completions(provider_config):
+    from providers.base import ProviderConfig
+
+    config = ProviderConfig(
+        api_key="test_key",
+        base_url="https://test.api.nvidia.com/v1/chat/completions/",
+    )
+    with patch("providers.openai_compat.AsyncOpenAI") as mock_openai:
+        provider = NvidiaNimProvider(config, nim_settings=NimSettings())
+        assert provider._base_url == "https://test.api.nvidia.com/v1"
+        mock_openai.assert_called_once()

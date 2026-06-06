@@ -46,6 +46,11 @@ def get_user_facing_error_message(
     if name == "APIError":
         if status_code in (502, 503, 504):
             return "Provider is temporarily unavailable. Please retry."
+        if status_code is not None and status_code >= 500:
+            return "Provider API request failed."
+        msg = str(e).strip()
+        if msg and msg != "_" and msg != "Provider API request failed.":
+            return msg
         return "Provider API request failed."
     if name.endswith("ProviderError") or name == "ProviderError":
         return "Provider request failed."

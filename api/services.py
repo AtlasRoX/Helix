@@ -205,7 +205,46 @@ class ClaudeProxyService:
                         "gateway_model": routed.request.model,
                     },
                 )
-                return anthropic_sse_streaming_response(streamed)
+
+                # Wrap streamed response in analytics tracking
+                async def _analytics_traced_stream_wrapper(
+                    stream: AsyncIterator[str], in_tokens: int
+                ) -> AsyncIterator[str]:
+                    import json
+
+                    from api.analytics import GlobalAnalytics
+
+                    analytics = GlobalAnalytics.get_instance()
+                    analytics.prompt_tokens += in_tokens
+                    analytics.requests_count += 1
+                    try:
+                        async for chunk in stream:
+                            for line in chunk.splitlines():
+                                if line.startswith("data: "):
+                                    try:
+                                        payload = json.loads(line[6:])
+                                        if (
+                                            isinstance(payload, dict)
+                                            and payload.get("type") == "message_delta"
+                                        ):
+                                            usage = payload.get("usage")
+                                            if isinstance(usage, dict):
+                                                out_tokens = usage.get(
+                                                    "output_tokens", 0
+                                                )
+                                                analytics.completion_tokens += (
+                                                    out_tokens
+                                                )
+                                    except Exception:
+                                        pass
+                            yield chunk
+                    except Exception:
+                        analytics.errors_count += 1
+                        raise
+
+                return anthropic_sse_streaming_response(
+                    _analytics_traced_stream_wrapper(streamed, input_tokens)
+                )
 
         except ProviderError:
             raise
